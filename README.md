@@ -31,14 +31,14 @@ This plugin gives Claude deep expertise in Salesforce Manufacturing Cloud, enabl
 
 In Claude Code, run:
 ```
-/plugin marketplace add joe-ferraro/claude-for-mfg
+/plugin marketplace add sgrandhi/claude-for-mfg
 /plugin install mfg
 ```
 
 **Option 2: Local Development**
 
 ```bash
-# git clone https://github.com/joe-ferraro/claude-for-mfg.git
+# git clone https://github.com/sgrandhi/claude-for-mfg.git
 cd claude-for-mfg
 npm install
 npm run build
@@ -83,6 +83,7 @@ The plugin will guide you through:
 | `/mfg:import-config` | Import configuration from JSON export |
 | `/mfg:status` | Dashboard view of the connected org |
 | `/mfg:getting-started` | Interactive onboarding and capability discovery |
+| `/mfg:slack-analysis <channel>` | Analyze a Slack channel for question patterns and trends |
 
 ## Skills (Auto-Invoked)
 
@@ -98,6 +99,7 @@ Claude automatically activates the right skill based on what you're asking about
 | `mfg-user-management` | User provisioning, permission sets, profiles, role hierarchy |
 | `mfg-data-model` | Expert knowledge of the Manufacturing Cloud data model |
 | `salesforce-query` | Helps construct and execute SOQL queries |
+| `mfg-slack-analysis` | Analyzes Slack channels for support question patterns and trends |
 
 ## Example Usage
 
@@ -230,6 +232,38 @@ Issues (2 warnings):
 1. No SalesAgreement record types — create via Setup > Object Manager > SalesAgreement
 2. No AccountForecast records — schedule and run DPE definition
 ```
+
+### Slack channel analysis
+
+```
+/mfg:slack-analysis https://salesforce-internal.slack.com/archives/C028WU2N2UQ last 7 days
+```
+
+```
+# Manufacturing Cloud Support Channel Analysis
+
+**Period**: 2026-03-04 to 2026-03-11
+**Channel**: #tmp-help-manufacturing-automotive (C028WU2N2UQ)
+**Total Questions Analyzed**: 14
+
+## Module Distribution
+
+| Module             | Count | %   | Top Issue                              |
+|--------------------|-------|-----|----------------------------------------|
+| Inventory Mgmt     | 5     | 36% | OrderItem layout edit with perm sets   |
+| Sales Agreements   | 4     | 29% | ERP actuals sync not populating        |
+| Warranty           | 3     | 21% | Claims stuck in review                 |
+| General            | 2     | 14% | Permission set assignment errors       |
+
+## Key Findings
+
+1. Inventory Management questions dominate — mostly related to
+   permission set conflicts with page layouts
+2. 71% of questions resolved via configuration guidance
+3. 2 questions linked to known bugs with fixes planned for 262
+```
+
+---
 
 ## MCP Server Tools
 

@@ -5,8 +5,8 @@ Thank you for your interest in contributing! This guide covers setup, developmen
 ## Setup
 
 ```bash
-# git clone https://github.com/joe-ferraro/claude-for-mfg.git
-cd claude-for-mfg
+# git clone git@git.soma.salesforce.com:sgrandhi/claudeForMFG.git
+cd claudeForManufacturing
 npm install
 npm run build
 ```

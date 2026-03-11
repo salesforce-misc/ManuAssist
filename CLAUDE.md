@@ -187,6 +187,7 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | `mfg-user-management` | Questions about user access, permission sets |
 | `mfg-data-model` | Questions about Manufacturing Cloud objects or SOQL |
 | `salesforce-query` | Constructing SOQL queries |
+| `mfg-slack-analysis` | Analyzing support channel trends, common issues, question patterns |
 
 ## Commands (User-invoked with `/mfg:command`)
 
@@ -207,6 +208,7 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | `/mfg:help` | Search Manufacturing Cloud knowledge base |
 | `/mfg:open-org` | Open the Salesforce org in browser |
 | `/mfg:release-notes` | View MFG release notes by Salesforce release |
+| `/mfg:slack-analysis` | Analyze MFG support Slack channel for question patterns and trends |
 
 ## Agents
 
