@@ -1,0 +1,18 @@
+{
+  "name": "mfg",
+  "version": "0.1.0",
+  "description": "Salesforce Manufacturing Cloud — Knowledge, guidance, and org tools for Manufacturing Cloud implementations",
+  "author": {
+    "name": "Salesforce Manufacturing Expert"
+  },
+  "keywords": [
+    "salesforce",
+    "manufacturing-cloud",
+    "mfg",
+    "sales-agreements",
+    "warranty",
+    "forecasting",
+    "crm"
+  ],
+  "license": "MIT"
+}

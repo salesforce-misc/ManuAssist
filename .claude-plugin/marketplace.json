@@ -1,0 +1,15 @@
+{
+  "name": "mfg",
+  "description": "Manufacturing Cloud plugins for Claude Code",
+  "owner": {
+    "name": "Sindhuri Grandhi"
+  },
+  "plugins": [
+    {
+      "name": "mfg",
+      "source": ".",
+      "description": "Salesforce Manufacturing Cloud - Knowledge, guidance, and Salesforce org tools for Manufacturing Cloud implementations",
+      "version": "0.1.0"
+    }
+  ]
+}
