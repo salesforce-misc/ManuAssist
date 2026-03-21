@@ -31,7 +31,8 @@ When connecting to a Salesforce org, follow these rules strictly:
 │  │  • mfg-partner-visits     • /mfg:configure-visits     │  │
 │  │  • mfg-user-management    • /mfg:configure-users      │  │
 │  │  • mfg-data-model         • /mfg:health-check         │  │
-│  │  • salesforce-query       • /mfg:status               │  │
+│  │  • mfg-inventory-alloc    • /mfg:status               │  │
+│  │  • salesforce-query       • /mfg:soql-query            │  │
 │  │                           • /mfg:soql-query            │  │
 │  │                           • /mfg:describe              │  │
 │  │                                                       │  │
@@ -40,6 +41,7 @@ When connecting to a Salesforce org, follow these rules strictly:
 │  │  • mfg-consultant         • Sales Agreement tools     │  │
 │  │  • mfg-admin              • Partner Visit tools       │  │
 │  │  • mfg-developer          • Warranty tools            │  │
+│  │                           • Inventory Allocation tools│  │
 │  │                           • Forecasting tools         │  │
 │  │                           • Config check tools        │  │
 │  │                           • Salesforce org tools      │  │
@@ -160,6 +162,13 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | Warranty | `Asset` | `Asset__c` |
 | Rebates | `RebateProgram` | `RebateProgram__c` |
 | Inventory | `ProductItem` | `InventoryItem__c`, `StockItem__c` |
+| Inventory | `InventoryReservation` | `InventoryReservation__c` |
+| Inventory | `InventoryItemReservation` | `InventoryItemReservation__c` |
+| Inventory | `InventoryBatchItemReservation` | `InventoryBatchItemReservation__c` |
+| Inventory | `InventorySerializedProductReservation` | `InventorySerializedProductReservation__c` |
+| Inventory | `ProductItemAdditionalTransaction` | `ProductItemAdditionalTransaction__c` |
+| Inventory | `ProductBatchItem` | `ProductBatchItem__c` |
+| Inventory | `SerializedProduct` | `SerializedProduct__c` |
 
 > **Note:** `WarrantyClaim`, `WarrantyClaimProduct`, and `SupplierRecoveryContract` are NOT available in this org.
 
@@ -174,6 +183,7 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | `WarrantyManagementUser` | Warranty term and claims admins |
 | `SalesAgreementsUser` | Sales agreement compliance tracking |
 | `RebateManagementUser` | Rebate program managers |
+| `InventoryAllocationUser` | Inventory allocation managers (requires `ManageInventoryAllocation` perm) |
 
 ## Skills (Auto-invoked by Claude)
 
@@ -187,6 +197,7 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | `mfg-user-management` | Questions about user access, permission sets |
 | `mfg-data-model` | Questions about Manufacturing Cloud objects or SOQL |
 | `salesforce-query` | Constructing SOQL queries |
+| `mfg-inventory-allocation` | Questions about inventory allocation, deallocation, reservation APIs, inventory states, ProductItem quantities, batch/serialized allocation |
 | `mfg-slack-analysis` | Analyzing support channel trends, common issues, question patterns |
 
 ## Commands (User-invoked with `/mfg:command`)
@@ -273,6 +284,7 @@ claude-for-mfg/
 │   ├── mfg-partner-visits/SKILL.md
 │   ├── mfg-user-management/SKILL.md
 │   ├── mfg-data-model/SKILL.md
+│   ├── mfg-inventory-allocation/SKILL.md
 │   └── salesforce-query/SKILL.md
 ├── commands/                      # Slash commands
 │   ├── configure-sales-agreements.md
