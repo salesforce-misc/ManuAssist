@@ -105,29 +105,16 @@ function parseCommandsTable(): string[] {
  * This mapping handles the human-readable names vs. kebab-case directory names.
  */
 const MODULE_NAME_TO_DIR: Record<string, string> = {
-  'Account Management': 'account-management',
-  'Visit Management': 'visit-management',
-  'Sample Management': 'sample-management',
-  'Activity Plan': 'activity-plan',
-  'Territory Alignment': 'territory-alignment',
+  'Sales Agreements': 'sales-agreements',
+  'Advanced Account Forecasting': 'advanced-account-forecasting',
+  'Partner Visit Management': 'partner-visit-management',
+  'Warranty Management': 'warranty-management',
+  'Rebate Management': 'rebate-management',
+  'Inventory Allocation': 'inventory-allocation',
+  'Manufacturing Programs': 'manufacturing-programs',
   'User Management': 'user-management',
-  'Consent Management': 'consent-management',
-  'Lists & Filters': 'lists-filters',
-  'Field Email': 'field-email',
-  'Intelligent Content': 'intelligent-content',
-  'Home Page': 'home-page',
-  'Calendar/TOT/Routine': 'calendar-tot-routine-myteam',
-  'Surveys': 'surveys',
-  'Product Management': 'product-management',
-  'App Alerts/Notifications': 'app-alerts-notifications',
-  'Next Best (NBC/NBA/NBM)': 'next-best-nbc-nba-nbm',
-  'Key Account Management': 'key-account-management',
-  'Segmentation': 'segmentation-admin-only',
-  'Workflow Management': 'generic-workflow',
-  'Agentforce': 'agentforce',
-  'Data Cloud/Singularity': 'data-cloud-singularity-and-tabnext-metrics',
-  'Manufacturing Apps': 'mfg-apps',
-  'Mobile Metadata Cache': 'mobile-metadata-cache',
+  'Product Portfolio': 'product-portfolio',
+  'Account Management': 'account-management',
 };
 
 /** Wrong object names — custom __c variants that should never be used for standard Manufacturing Cloud objects. */
@@ -219,8 +206,8 @@ describe('Knowledge Base Integrity', () => {
       .filter((d) => d.isDirectory())
       .map((d) => d.name);
 
-    it('should parse at least 20 modules from CLAUDE.md', () => {
-      expect(claudeModules.length).toBeGreaterThanOrEqual(20);
+    it('should parse at least 5 modules from CLAUDE.md', () => {
+      expect(claudeModules.length).toBeGreaterThanOrEqual(5);
     });
 
     it.each(claudeModules)(

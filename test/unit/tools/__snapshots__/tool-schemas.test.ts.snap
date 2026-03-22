@@ -1,0 +1,648 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`tool-schemas > tool count > should report the exact count for documentation purposes 1`] = `48`;
+
+exports[`tool-schemas > tool inventory > lists all registered tool names 1`] = `
+[
+  "activate_sales_agreement",
+  "assign_permission_set",
+  "bulk_create_records",
+  "bulk_update_records",
+  "check_account_manager_targets",
+  "check_forecasting_config",
+  "check_mfg_account_config",
+  "check_mfg_setup",
+  "check_mfg_user_config",
+  "check_partner_visit_config",
+  "check_product_portfolio_config",
+  "check_sales_agreement_config",
+  "check_warranty_config",
+  "create_record",
+  "delete_record",
+  "deploy_metadata",
+  "describe_sobject",
+  "diff_orgs",
+  "explain_mfg_concept",
+  "export_config",
+  "get_mfg_admin_setup",
+  "get_mfg_exercise",
+  "get_mfg_guide",
+  "get_mfg_help_doc",
+  "get_mfg_module_docs",
+  "get_mfg_troubleshooting",
+  "get_org_status",
+  "get_record",
+  "get_release_notes",
+  "get_sales_agreement_details",
+  "health_check",
+  "import_config",
+  "install_sf_cli",
+  "list_mfg_help_docs",
+  "list_mfg_modules",
+  "list_partner_visits",
+  "list_permission_sets",
+  "list_sf_orgs",
+  "list_users",
+  "list_warranty_claims",
+  "open_org",
+  "retrieve_metadata",
+  "run_apex",
+  "run_soql",
+  "search_mfg_knowledge",
+  "set_target_org",
+  "unassign_permission_set",
+  "update_record",
+]
+`;
+
+exports[`tool-schemas > tool schema snapshot > should match the snapshot of all tool names and their parameter shapes 1`] = `
+[
+  {
+    "name": "list_mfg_modules",
+    "params": {},
+  },
+  {
+    "name": "get_mfg_module_docs",
+    "params": {
+      "module": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "search_mfg_knowledge",
+    "params": {
+      "maxResults": {
+        "optional": true,
+        "type": "ZodNumber",
+      },
+      "query": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "explain_mfg_concept",
+    "params": {
+      "concept": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_mfg_admin_setup",
+    "params": {
+      "feature": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "list_mfg_help_docs",
+    "params": {},
+  },
+  {
+    "name": "get_mfg_help_doc",
+    "params": {
+      "slug": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_mfg_guide",
+    "params": {
+      "slug": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_mfg_troubleshooting",
+    "params": {
+      "topic": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_mfg_exercise",
+    "params": {
+      "slug": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_mfg_setup",
+    "params": {},
+  },
+  {
+    "name": "install_sf_cli",
+    "params": {},
+  },
+  {
+    "name": "list_sf_orgs",
+    "params": {},
+  },
+  {
+    "name": "set_target_org",
+    "params": {
+      "org": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "open_org",
+    "params": {
+      "path": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "run_soql",
+    "params": {
+      "query": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "describe_sobject",
+    "params": {
+      "objectName": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_record",
+    "params": {
+      "fields": {
+        "optional": false,
+        "type": "ZodArray",
+      },
+      "objectName": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "recordId": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "create_record",
+    "params": {
+      "objectName": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "values": {
+        "optional": false,
+        "type": "ZodRecord",
+      },
+    },
+  },
+  {
+    "name": "update_record",
+    "params": {
+      "objectName": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "recordId": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "values": {
+        "optional": false,
+        "type": "ZodRecord",
+      },
+    },
+  },
+  {
+    "name": "delete_record",
+    "params": {
+      "objectName": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "recordId": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_mfg_user_config",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_product_portfolio_config",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_mfg_account_config",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_sales_agreement_config",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_sales_agreement_details",
+    "params": {
+      "nameOrId": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "activate_sales_agreement",
+    "params": {
+      "salesAgreementId": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_partner_visit_config",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "list_partner_visits",
+    "params": {
+      "accountName": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "limit": {
+        "optional": true,
+        "type": "ZodOptional",
+      },
+      "status": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_warranty_config",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "list_warranty_claims",
+    "params": {
+      "accountName": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "limit": {
+        "optional": true,
+        "type": "ZodOptional",
+      },
+      "status": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_forecasting_config",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "check_account_manager_targets",
+    "params": {
+      "ownerNameOrId": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "targetPeriod": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "diff_orgs",
+    "params": {
+      "scope": {
+        "optional": true,
+        "type": "ZodEnum",
+      },
+      "sourceOrg": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": false,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "list_users",
+    "params": {
+      "filterBy": {
+        "optional": true,
+        "type": "ZodOptional",
+      },
+      "filterValue": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "list_permission_sets",
+    "params": {
+      "includeAllNamespaces": {
+        "optional": true,
+        "type": "ZodOptional",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "assign_permission_set",
+    "params": {
+      "permissionSetName": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "userIds": {
+        "optional": true,
+        "type": "ZodArray",
+      },
+      "usernames": {
+        "optional": true,
+        "type": "ZodArray",
+      },
+    },
+  },
+  {
+    "name": "unassign_permission_set",
+    "params": {
+      "permissionSetName": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "userIds": {
+        "optional": true,
+        "type": "ZodArray",
+      },
+      "usernames": {
+        "optional": true,
+        "type": "ZodArray",
+      },
+    },
+  },
+  {
+    "name": "health_check",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_org_status",
+    "params": {
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "export_config",
+    "params": {
+      "categories": {
+        "optional": true,
+        "type": "ZodArray",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "import_config",
+    "params": {
+      "configJson": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "dryRun": {
+        "optional": true,
+        "type": "ZodOptional",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "get_release_notes",
+    "params": {
+      "release": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "run_apex",
+    "params": {
+      "code": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "bulk_create_records",
+    "params": {
+      "records": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "sobjectType": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "bulk_update_records",
+    "params": {
+      "records": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "sobjectType": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "deploy_metadata",
+    "params": {
+      "sourcePath": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+  {
+    "name": "retrieve_metadata",
+    "params": {
+      "metadata": {
+        "optional": false,
+        "type": "ZodString",
+      },
+      "outputDir": {
+        "optional": true,
+        "type": "ZodString",
+      },
+      "targetOrg": {
+        "optional": true,
+        "type": "ZodString",
+      },
+    },
+  },
+]
+`;
