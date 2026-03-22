@@ -183,6 +183,8 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | Inventory | `ProductItemAdditionalTransaction` | `ProductItemAdditionalTransaction__c` |
 | Inventory | `ProductBatchItem` | `ProductBatchItem__c` |
 | Inventory | `SerializedProduct` | `SerializedProduct__c` |
+| Inventory | `InventoryCountPlan` | `InventoryCountPlan__c` |
+| Inventory | `InventoryCountAssessment` | `InventoryCountAssessment__c` |
 
 **CORRECT object names:** `SalesAgreement`, `AccountForecast`, `Visit`, `WarrantyTerm`, `ProductItem`, `SerializedProduct`, `RebateProgram`, `ManufacturingProgram`, `AcctMgrTarget`, `InventoryReservation`
 

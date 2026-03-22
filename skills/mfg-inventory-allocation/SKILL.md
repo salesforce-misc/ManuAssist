@@ -1,6 +1,6 @@
 ---
 name: mfg-inventory-allocation
-description: Expert guidance on Manufacturing Cloud Inventory States and Allocation — inventory reservation APIs, allocation/deallocation workflows, batch and serialized product allocation, async processing layer, and test data creation patterns. Use when user asks about inventory allocation, deallocation, inventory reservation, ProductItem quantities, InventoryReservation, InventoryItemReservation, InventoryBatchItemReservation, InventorySerializedProductReservation, or inventory states.
+description: Expert guidance on Manufacturing Cloud Inventory States and Allocation — inventory reservation APIs, allocation/deallocation workflows, batch and serialized product allocation, async processing layer, test data creation patterns, and physical inventory counting (InventoryCountPlan, InventoryCountAssessment). Use when user asks about inventory allocation, deallocation, inventory reservation, ProductItem quantities, InventoryReservation, InventoryItemReservation, InventoryBatchItemReservation, InventorySerializedProductReservation, inventory states, inventory count plan, inventory count assessment, AssigneeId on InventoryCountAssessment, or cycle counting.
 ---
 
 # Manufacturing Cloud Inventory States and Allocation
