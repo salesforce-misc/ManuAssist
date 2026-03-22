@@ -272,3 +272,5 @@ slack_search_public(query="in:<#CHANNEL_ID> Gore")
 - Use `slack_search_public` with date filters instead of paginating through `slack_read_channel` for targeted analysis
 - When analyzing trends over time, batch the analysis by week to keep thread reads manageable
 - Use `response_format="concise"` on channel reads when you only need message timestamps for thread reads
+
+> 📖 Source: Manufacturing Cloud — Slack Channel Analysis

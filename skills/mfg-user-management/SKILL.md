@@ -109,3 +109,5 @@ FROM User
 WHERE UserType = 'PowerPartner'
 ORDER BY Name
 ```
+
+Use `get_mfg_module_docs` with slug `user-management` for full permission set and user configuration reference, or `search_mfg_knowledge` for targeted searches.

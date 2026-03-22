@@ -88,6 +88,10 @@ Use `check_forecasting_config` to validate:
 | Program forecasts missing | ManufacturingProgram records not created | Create programs for production supplier use cases |
 | Period metrics stale | DPE not running on schedule | Check Scheduled Jobs, re-run DPE |
 
+## Detailed Documentation
+
+Use `get_mfg_module_docs` with slug `advanced-account-forecasting` for full configuration reference, or `search_mfg_knowledge` for targeted searches.
+
 ## SOQL Quick Reference
 
 ```sql

@@ -7,6 +7,10 @@ description: Expert guidance on Manufacturing Cloud Partner Visit Management —
 
 Partner Visit Management enables account managers and field reps to schedule, execute, and track visits to distributors, dealers, and supplier locations. Action plan templates define standard checklists for common visit types.
 
+## Detailed Documentation
+
+Use `get_mfg_module_docs` with slug `partner-visit-management` for full configuration reference, or `search_mfg_knowledge` for targeted searches.
+
 ## Key Objects
 
 | Object | Purpose |

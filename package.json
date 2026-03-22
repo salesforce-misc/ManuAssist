@@ -1,7 +1,7 @@
 {
-  "name": "claude-for-mfg",
+  "name": "mfg-cloud-mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for Salesforce Manufacturing Cloud implementations",
+  "description": "MCP server providing Manufacturing Cloud knowledge, Salesforce org tools, and implementation guidance",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

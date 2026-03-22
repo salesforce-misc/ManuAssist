@@ -60,6 +60,10 @@ Use `check_warranty_config` to validate:
 | Warranty not auto-assigned | ProductWarrantyTerm not created for the product | Create ProductWarrantyTerm linking Product2 to WarrantyTerm |
 | Coverage details missing | WarrantyTermCoverage not configured | Add coverage records (labor, parts, expenses) to the WarrantyTerm |
 
+## Detailed Documentation
+
+Use `get_mfg_module_docs` with slug `warranty-management` for full configuration reference, or `search_mfg_knowledge` for targeted searches.
+
 ## SOQL Quick Reference
 
 ```sql

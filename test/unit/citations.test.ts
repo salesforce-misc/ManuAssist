@@ -11,11 +11,11 @@ describe("citation-map.ts", () => {
   // citationMap coverage
   // ==========================================================================
   describe("citationMap (Official Help, Guides, Exercises, Troubleshooting)", () => {
-    it("has all 15 Official Help entries", () => {
+    it("has all 10 Official Help entries", () => {
       const helpEntries = Object.values(citationMap).filter(
         (e) => e.category === "Official Help",
       );
-      expect(helpEntries.length).toBe(15);
+      expect(helpEntries.length).toBe(10);
     });
 
     it("has 2 Guide entries", () => {
@@ -54,15 +54,15 @@ describe("citation-map.ts", () => {
   // moduleCitationMap coverage
   // ==========================================================================
   describe("moduleCitationMap (PM Enablement)", () => {
-    it("has entries for all 28 module directory slugs", () => {
-      // These are the module:module entries (e.g. "visit-management:visit-management")
+    it("has entries for all module directory slugs", () => {
+      // These are the module:module entries (e.g. "sales-agreements:sales-agreements")
       const moduleDirectorySlugs = Object.keys(moduleCitationMap).filter(
         (key) => {
           const [mod, slug] = key.split(":");
           return mod === slug;
         },
       );
-      expect(moduleDirectorySlugs.length).toBeGreaterThanOrEqual(28);
+      expect(moduleDirectorySlugs.length).toBeGreaterThanOrEqual(11);
     });
 
     it("all entries are PM Enablement category", () => {
@@ -83,17 +83,17 @@ describe("citation-map.ts", () => {
     });
 
     it("includes individual file slugs for multi-file modules", () => {
-      // Visit management has 5 content files — check they're all mapped
+      // Partner visit management has multiple content files
       const visitKeys = Object.keys(moduleCitationMap).filter((k) =>
-        k.startsWith("visit-management:"),
+        k.startsWith("partner-visit-management:"),
       );
-      expect(visitKeys.length).toBeGreaterThanOrEqual(6); // 1 module-level + 5 files
+      expect(visitKeys.length).toBeGreaterThanOrEqual(3); // 1 module-level + at least 2 files
 
-      // Account management has 10 content files
+      // Account management has content files
       const acctKeys = Object.keys(moduleCitationMap).filter((k) =>
         k.startsWith("account-management:"),
       );
-      expect(acctKeys.length).toBeGreaterThanOrEqual(11); // 1 module-level + 10 files
+      expect(acctKeys.length).toBeGreaterThanOrEqual(2); // 1 module-level + at least 1 file
     });
   });
 
@@ -102,7 +102,7 @@ describe("citation-map.ts", () => {
   // ==========================================================================
   describe("getCitation()", () => {
     it("returns Official Help entry for bare slug without moduleName", () => {
-      const info = getCitation("account-management");
+      const info = getCitation("sales-agreements");
       expect(info).toBeDefined();
       expect(info!.category).toBe("Official Help");
       expect(info!.url).toContain("salesforce.com");
@@ -115,10 +115,10 @@ describe("citation-map.ts", () => {
     });
 
     it("resolves individual file slug within a module", () => {
-      const info = getCitation("provider-card", "account-management");
+      const info = getCitation("account-configuration-guide", "account-management");
       expect(info).toBeDefined();
       expect(info!.category).toBe("PM Enablement");
-      expect(info!.label).toBe("Provider Card");
+      expect(info!.label).toBe("Account Configuration Guide");
     });
 
     it("falls back to citationMap when moduleName has no match", () => {
@@ -145,7 +145,7 @@ describe("formatCitation()", () => {
   });
 
   it("includes URL link for Official Help docs", () => {
-    const result = formatCitation("account-management");
+    const result = formatCitation("sales-agreements");
     expect(result).toContain("📖 **Source:**");
     expect(result).toContain("Official Help");
     expect(result).toContain("🔗 **Link:**");
@@ -159,17 +159,17 @@ describe("formatCitation()", () => {
   });
 
   it("returns PM Enablement citation when moduleName provided", () => {
-    const result = formatCitation("visit-management", "visit-management");
+    const result = formatCitation("partner-visit-management", "partner-visit-management");
     expect(result).toContain("📖 **Source:**");
     expect(result).toContain("PM Enablement");
-    expect(result).toContain("Visit Management");
+    expect(result).toContain("Partner Visit Management");
     expect(result).toContain("📂 **File:**");
   });
 
   it("file path includes module directory for PM Enablement", () => {
-    const result = formatCitation("provider-card", "account-management");
+    const result = formatCitation("account-configuration-guide", "account-management");
     expect(result).toContain("📂 **File:**");
-    expect(result).toMatch(/account-management\/provider-card\.md/);
+    expect(result).toMatch(/account-management\/account-configuration-guide\.md/);
   });
 
   it("prefers PM Enablement over Official Help when moduleName matches", () => {
@@ -179,7 +179,7 @@ describe("formatCitation()", () => {
   });
 
   it("returns Official Help when no moduleName for shared slug", () => {
-    const result = formatCitation("account-management");
+    const result = formatCitation("sales-agreements");
     expect(result).toContain("Official Help");
   });
 

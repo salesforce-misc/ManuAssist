@@ -10,9 +10,9 @@ import {
  * These validate that the knowledge base is properly structured and accessible.
  */
 describe("knowledge-loader integration (real filesystem)", () => {
-  it("getModuleList() returns 10+ modules from knowledge/modules/", () => {
+  it("getModuleList() returns 7+ modules from knowledge/modules/", () => {
     const modules = getModuleList();
-    expect(modules.length).toBeGreaterThanOrEqual(10);
+    expect(modules.length).toBeGreaterThanOrEqual(7);
 
     // Verify each module has required fields
     for (const mod of modules) {

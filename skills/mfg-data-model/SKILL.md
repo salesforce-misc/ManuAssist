@@ -141,3 +141,5 @@ Product2 ──── SalesAgreementProduct
         ──── AcctMgrTargetDstr (target by product)
         ──── SupplierProduct ─── Supplier
 ```
+
+Use `get_mfg_module_docs` to retrieve full object documentation for any module, or `search_mfg_knowledge` to look up specific field names and relationships.

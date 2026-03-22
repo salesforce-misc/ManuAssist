@@ -30,7 +30,7 @@ import { register as registerMetadata } from "./tools/metadata.js";
 
 // Create the MCP server
 const server = new McpServer({
-  name: "claude-for-mfg",
+  name: "mfg-cloud-mcp-server",
   version: "0.1.0",
 });
 
@@ -63,7 +63,7 @@ async function main() {
   const exercises = getExerciseList();
   const troubleshooting = getTroubleshootingList();
 
-  console.error(`Claude for Manufacturing Cloud MCP server starting...`);
+  console.error(`Manufacturing Cloud MCP server starting...`);
   console.error(`Knowledge base loaded:`);
   console.error(`  - ${modules.length} modules`);
   console.error(`  - ${helpDocs.length} help documents`);
@@ -73,7 +73,7 @@ async function main() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Claude for Manufacturing Cloud MCP server running on stdio");
+  console.error("Manufacturing Cloud MCP server running on stdio");
 }
 
 main().catch((error) => {

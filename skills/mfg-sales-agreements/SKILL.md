@@ -68,6 +68,10 @@ Use `check_sales_agreement_config` to validate:
 | Products not visible | Price Book not linked or PricebookEntry inactive | Check Pricebook2 and PricebookEntry records |
 | Agreement expires | EndDate passed — Status auto-set to Expired | Renew by updating EndDate and re-activating |
 
+## Detailed Documentation
+
+Use `get_mfg_module_docs` with slug `sales-agreements` for full configuration reference, or `search_mfg_knowledge` to search across all Manufacturing Cloud topics.
+
 ## SOQL Quick Reference
 
 ```sql

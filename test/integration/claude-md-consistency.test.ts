@@ -381,9 +381,11 @@ describe("CLAUDE.md self-consistency", () => {
 
     beforeAll(() => {
       documentedSkills = extractSkillNamesFromClaudeMd(claudeMd);
+      // Only validate directories that contain a SKILL.md — bare directories without
+      // SKILL.md are not skills and should not be required to appear in CLAUDE.md.
       skillDirs = fs
         .readdirSync(SKILLS_DIR, { withFileTypes: true })
-        .filter((d) => d.isDirectory())
+        .filter((d) => d.isDirectory() && fs.existsSync(path.join(SKILLS_DIR, d.name, "SKILL.md")))
         .map((d) => d.name);
     });
 

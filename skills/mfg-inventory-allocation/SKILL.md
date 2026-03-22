@@ -368,3 +368,5 @@ SELECT Id, Product2Id, Product2.Name, LocationId, Location.Name
 FROM ProductFulfilmentLocation
 ORDER BY Product2.Name
 ```
+
+> 📖 Source: Manufacturing Cloud — Inventory Allocation

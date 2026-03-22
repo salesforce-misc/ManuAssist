@@ -21,23 +21,23 @@ describe("citations in tool responses (real filesystem)", () => {
   // get_mfg_module_docs tool path
   // ==========================================================================
   describe("get_mfg_module_docs response", () => {
-    it("visit-management response contains citation", () => {
-      const content = getModuleContent("visit-management");
+    it("partner-visit-management response contains citation", () => {
+      const content = getModuleContent("partner-visit-management");
       expect(content).toBeTruthy();
-      const citation = formatCitation("visit-management", "visit-management");
+      const citation = formatCitation("partner-visit-management", "partner-visit-management");
       const response = content + citation;
       expect(response).toContain("📖 **Source:**");
       expect(response).toContain("PM Enablement");
-      expect(response).toContain("Visit Management");
+      expect(response).toContain("Partner Visit Management");
     });
 
-    it("account-management response cites PM Enablement, not Official Help", () => {
-      const content = getModuleContent("account-management");
+    it("sales-agreements response cites PM Enablement, not Official Help", () => {
+      const content = getModuleContent("sales-agreements");
       expect(content).toBeTruthy();
-      // This is the key collision test — the tool passes moduleName
+      // This is the key collision test — the tool passes moduleName so PM Enablement wins
       const citation = formatCitation(
-        "account-management",
-        "account-management",
+        "sales-agreements",
+        "sales-agreements",
       );
       const response = content + citation;
       expect(response).toContain("📖 **Source:**");
@@ -46,12 +46,12 @@ describe("citations in tool responses (real filesystem)", () => {
       expect(response).not.toContain("Official Help");
     });
 
-    it("sample-management response contains citation", () => {
-      const content = getModuleContent("sample-management");
+    it("warranty-management response contains citation", () => {
+      const content = getModuleContent("warranty-management");
       expect(content).toBeTruthy();
       const citation = formatCitation(
-        "sample-management",
-        "sample-management",
+        "warranty-management",
+        "warranty-management",
       );
       const response = content + citation;
       expect(response).toContain("📖 **Source:**");
@@ -99,8 +99,8 @@ describe("citations in tool responses (real filesystem)", () => {
       }
     });
 
-    it("search results for 'sample' include citations", () => {
-      const results = searchKnowledge("sample");
+    it("search results for 'warranty' include citations", () => {
+      const results = searchKnowledge("warranty");
       expect(results.length).toBeGreaterThan(0);
 
       for (const r of results.slice(0, 3)) {

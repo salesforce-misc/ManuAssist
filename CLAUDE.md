@@ -72,12 +72,21 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | Tool | Description |
 |------|-------------|
 | `list_mfg_modules` | List Manufacturing Cloud modules |
+| `get_mfg_module_docs` | Full documentation for a module by slug |
 | `search_mfg_knowledge` | Search documentation |
+| `explain_mfg_concept` | Explain a Manufacturing Cloud concept |
+| `get_mfg_admin_setup` | Admin configuration guidance |
+| `list_mfg_help_docs` | List official help documents |
+| `get_mfg_help_doc` | Get a specific help document |
+| `get_mfg_guide` | Get an implementation guide |
+| `get_mfg_troubleshooting` | Get troubleshooting content |
+| `get_mfg_exercise` | Get a hands-on exercise |
 
 ### Salesforce Org Tools (generic — work for any org)
 | Tool | Description |
 |------|-------------|
 | `check_mfg_setup` | Check if SF CLI installed and orgs authenticated |
+| `install_sf_cli` | Install or verify Salesforce CLI |
 | `list_sf_orgs` | List authenticated orgs |
 | `set_target_org` | Set which org to use |
 | `open_org` | Open org in browser |
@@ -142,6 +151,11 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | `assign_permission_set` | Assign permission set to users |
 | `unassign_permission_set` | Remove permission set from users |
 
+### Release Notes
+| Tool | Description |
+|------|-------------|
+| `get_release_notes` | Manufacturing Cloud release notes by Salesforce release |
+
 ## Key Manufacturing Cloud Objects
 
 **ALWAYS use these standard API names. NEVER use custom object names:**
@@ -169,6 +183,10 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | Inventory | `ProductItemAdditionalTransaction` | `ProductItemAdditionalTransaction__c` |
 | Inventory | `ProductBatchItem` | `ProductBatchItem__c` |
 | Inventory | `SerializedProduct` | `SerializedProduct__c` |
+
+**CORRECT object names:** `SalesAgreement`, `AccountForecast`, `Visit`, `WarrantyTerm`, `ProductItem`, `SerializedProduct`, `RebateProgram`, `ManufacturingProgram`, `AcctMgrTarget`, `InventoryReservation`
+
+**WRONG names (DO NOT USE):** `SalesAgreement__c`, `Forecast__c`, `Visit__c`, `WarrantyTerm__c`, `InventoryItem__c`, `SerializedProduct__c`, `RebateProgram__c`, `ManufacturingProgram__c`
 
 > **Note:** `WarrantyClaim`, `WarrantyClaimProduct`, and `SupplierRecoveryContract` are NOT available in this org.
 
@@ -204,7 +222,6 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 
 | Command | Description |
 |---------|-------------|
-| `/mfg:setup-plugin` | Check plugin status and connect to Salesforce org |
 | `/mfg:soql-query` | Run a SOQL query |
 | `/mfg:describe` | Describe a Salesforce object's fields |
 | `/mfg:health-check` | Comprehensive org health check |
@@ -220,6 +237,10 @@ Manufacturing Cloud is a **core platform product** (not a managed package). It e
 | `/mfg:open-org` | Open the Salesforce org in browser |
 | `/mfg:release-notes` | View MFG release notes by Salesforce release |
 | `/mfg:slack-analysis` | Analyze MFG support Slack channel for question patterns and trends |
+| `/mfg:audit` | Audit Manufacturing Cloud configuration for misconfigurations |
+| `/mfg:docs` | Browse Manufacturing Cloud documentation by category |
+| `/mfg:getting-started` | Interactive onboarding — check setup and discover capabilities |
+| `/mfg:import-config` | Import Manufacturing Cloud configuration from JSON export |
 
 ## Agents
 
