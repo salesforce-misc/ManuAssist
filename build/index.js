@@ -21,7 +21,7 @@ import { register as registerBulkOperations } from "./tools/bulk-operations.js";
 import { register as registerMetadata } from "./tools/metadata.js";
 // Create the MCP server
 const server = new McpServer({
-    name: "claude-for-mfg",
+    name: "mfg-cloud-mcp-server",
     version: "0.1.0",
 });
 // Register all tool modules
@@ -50,7 +50,7 @@ async function main() {
     const guides = getGuideList();
     const exercises = getExerciseList();
     const troubleshooting = getTroubleshootingList();
-    console.error(`Claude for Manufacturing Cloud MCP server starting...`);
+    console.error(`Manufacturing Cloud MCP server starting...`);
     console.error(`Knowledge base loaded:`);
     console.error(`  - ${modules.length} modules`);
     console.error(`  - ${helpDocs.length} help documents`);
@@ -59,7 +59,7 @@ async function main() {
     console.error(`  - ${troubleshooting.length} troubleshooting docs`);
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error("Claude for Manufacturing Cloud MCP server running on stdio");
+    console.error("Manufacturing Cloud MCP server running on stdio");
 }
 main().catch((error) => {
     console.error("Fatal error:", error);

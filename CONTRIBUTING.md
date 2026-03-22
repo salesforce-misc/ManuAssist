@@ -30,7 +30,7 @@ Start the server and point your MCP client at it via `.mcp.json`:
   "mcpServers": {
     "mfg": {
       "command": "node",
-      "args": ["${workspaceFolder}/dist/index.js"],
+      "args": ["${workspaceFolder}/build/index.js"],
       "cwd": "${workspaceFolder}"
     }
   }

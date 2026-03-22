@@ -28,6 +28,6 @@ export default [
     },
   },
   {
-    ignores: ["dist/**", "node_modules/**", "**/*.test.ts", "**/*.snap"],
+    ignores: ["build/**", "node_modules/**", "**/*.test.ts", "**/*.snap"],
   },
 ];

@@ -32,14 +32,14 @@ npm install
 npm run build
 ```
 
-Then point your MCP client at `dist/index.js`. For Claude Code, add to `.mcp.json`:
+Then point your MCP client at `build/index.js`. For Claude Code, add to `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "mfg": {
       "command": "node",
-      "args": ["${workspaceFolder}/dist/index.js"],
+      "args": ["${workspaceFolder}/build/index.js"],
       "cwd": "${workspaceFolder}"
     }
   }
@@ -180,7 +180,7 @@ MCP Client (Claude Code, Claude Desktop, Cursor, etc.)
 
 ```bash
 npm install          # Install dependencies
-npm run build        # Compile TypeScript → dist/
+npm run build        # Compile TypeScript → build/
 npm run dev          # Watch mode
 npm test             # Run tests
 npm run lint         # Lint source

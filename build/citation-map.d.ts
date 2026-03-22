@@ -1,6 +1,6 @@
 export interface CitationInfo {
     label: string;
-    category: "Official Help" | "PM Enablement" | "Guide" | "Exercise" | "Troubleshooting";
+    category: "Official Help" | "Guide" | "Exercise" | "Troubleshooting";
     url?: string;
 }
 /**
@@ -14,7 +14,7 @@ export declare const moduleCitationMap: Record<string, CitationInfo>;
  *
  * When moduleName is provided, first checks the module-specific citation map
  * using "module:slug" key format. This avoids collisions where a slug like
- * "sales-agreements" exists in both Official Help and PM Enablement.
+ * "sales-agreements" exists in both Official Help.
  *
  * Falls back to the base citationMap for help docs, guides, exercises, etc.
  */

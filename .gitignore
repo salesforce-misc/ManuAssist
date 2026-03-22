@@ -93,7 +93,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-# dist - intentionally tracked for plugin distribution
+# build - compiled TypeScript output
 
 # Gatsby files
 .cache/
