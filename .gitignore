@@ -97,6 +97,7 @@ out
 # Nuxt.js build / generate output
 .nuxt
 # build - compiled TypeScript output
+build/
 
 # Gatsby files
 .cache/
