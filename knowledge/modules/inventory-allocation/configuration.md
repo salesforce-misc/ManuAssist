@@ -89,3 +89,23 @@ Expected result:
 | Auto-allocate shows no preview | Missing `ProductFulfilmentLocation` records | Create product-to-location mapping records |
 | Batch allocation fails | `ProductBatchItem.RemainingQuantity = 0` | Check available batch quantity before allocation |
 | API returns 400 on serialized | SP `AllocationStatus` already set | Each serialized product can only be in one active reservation |
+| Inventory Location lookup shows all locations, can't filter by LocationType | Expected behavior — CBSF does not auto-filter by LocationType | Add `InventoryLocationType` to the search criteria fieldset in CBSF configuration (see below) |
+
+## Inventory Search and Transfer Component — CBSF Configuration
+
+### Inventory Location Lookup Behavior
+
+The **Inventory Location lookup** in the Inventory Search and Transfer component displays **all Location records the user has access to**. This is expected behavior — the component does not apply any automatic filters based on `LocationType` or other field values.
+
+### Filtering Locations by Type (e.g., LocationType = 'Ship-To')
+
+There is no way to restrict the Location lookup dropdown to specific `LocationType` values directly. However, users can filter results at search time by adding `InventoryLocationType` to the **CBSF (Criteria-Based Search and Filter) search criteria fieldset**.
+
+**How to configure:**
+1. Go to **Setup > Object Manager > Inventory Search and Transfer** (or the relevant CBSF configuration)
+2. Locate the **search criteria fieldset** for the Inventory Search and Transfer component
+3. Add `InventoryLocationType` to the fieldset
+4. Once added, users can filter the location results by type directly within the component's search criteria
+
+### Key Rule
+> The Inventory Location lookup showing all accessible records is **by design**. Do not treat this as a bug. The supported way to narrow results by location type is to expose `InventoryLocationType` in the CBSF search criteria fieldset configuration.
