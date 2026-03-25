@@ -109,3 +109,33 @@ There is no way to restrict the Location lookup dropdown to specific `LocationTy
 
 ### Key Rule
 > The Inventory Location lookup showing all accessible records is **by design**. Do not treat this as a bug. The supported way to narrow results by location type is to expose `InventoryLocationType` in the CBSF search criteria fieldset configuration.
+
+## CBSF 10-Record Selection Limit per Field
+
+### Symptom
+The Criteria-Based Search and Filter component limits selection to **10 records per lookup field**. This is problematic for bulk scenarios such as transferring 500 Serial Numbers across 15 products.
+
+### Confirmed Behavior
+The 10-record limit is an **enforced platform constraint** defined in the CBSF component code:
+- `criteriaBasedSearchFilterValueInput.js` — enforces the 10-value cap on the input field
+- `lookup.js` — controls the underlying lookup behavior
+
+### Is It Configurable?
+The limit **can be increased** by modifying `lookup.js` and `criteriaBasedSearchFilterValueInput.js`. However, increasing it is bounded by the following hard platform limits that cannot be changed:
+
+| Platform Constraint | Limit |
+|--------------------|-------|
+| SOSL query max length | 20,000 characters |
+| Effective Serial Number IDs per query | ~50–100 (depending on other field values in the query) |
+| SOSL maximum records returned | 2,000 records |
+
+### Key Rule
+> The 10-record limit is a code-level default, not an absolute ceiling — but the practical upper bound is ~50–100 values due to the 20k SOSL query character limit. For bulk operations beyond this range (e.g., 500+ Serial Numbers), the CBSF UI is not the right tool. Use the **Inventory Transfer REST API** or **Data Loader** for bulk serial number transfers.
+
+### Workarounds for Bulk Serial Number Transfers
+| Approach | Details |
+|----------|---------|
+| Inventory Transfer REST API | No equivalent input limit — best for programmatic bulk transfers |
+| Data Loader | Direct record creation for planned/scheduled batch transfers |
+| Custom Lightning Component | Accepts paste/CSV input of serial numbers, calls transfer API |
+| CBSF in batches | Run multiple transfers in groups of 10 — operational workaround only |
