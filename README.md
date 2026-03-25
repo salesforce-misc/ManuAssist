@@ -23,6 +23,18 @@ Connects your AI assistant to deep Manufacturing Cloud expertise, enabling it to
 - An MCP-capable client (Claude Code, Claude Desktop, Cursor, etc.)
 - Salesforce CLI (`sf`) — optional, required only for org tools
 
+### npm Registry (Salesforce Internal)
+
+This project uses the **Salesforce Nexus registry** for npm packages. Before running `npm install`, ensure your project-level `.npmrc` is configured:
+
+```
+registry=https://nexus-dev.data.sfdc.net/nexus/repository/npm-all/
+//nexus-dev.data.sfdc.net/nexus/repository/npm-all/:_auth=<base64-encoded-credentials>
+```
+
+> `.npmrc` is listed in `.gitignore` and must **never** be committed — it contains credentials.
+> You must be on the Salesforce internal network (or VPN) for the registry to be reachable.
+
 ### Setup
 
 ```bash
