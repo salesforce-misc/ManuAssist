@@ -1,6 +1,6 @@
 ---
 name: mfg-inventory-allocation
-description: Expert guidance on Manufacturing Cloud Inventory States and Allocation — inventory reservation APIs, allocation/deallocation workflows, batch and serialized product allocation, async processing layer, test data creation patterns, and physical inventory counting (InventoryCountPlan, InventoryCountAssessment). Use when user asks about inventory allocation, deallocation, inventory reservation, ProductItem quantities, InventoryReservation, InventoryItemReservation, InventoryBatchItemReservation, InventorySerializedProductReservation, inventory states, inventory count plan, inventory count assessment, AssigneeId on InventoryCountAssessment, or cycle counting.
+description: Expert guidance on Manufacturing Cloud Inventory States and Allocation — inventory reservation APIs, allocation/deallocation workflows for standard (non-batched, non-serialized) and unbatched serialized products, async processing layer, test data creation patterns, physical inventory counting (InventoryCountPlan, InventoryCountAssessment), AND the end-to-end customer user journey for allocation/deallocation (personas, click-by-click flow, status transitions, persona-led FAQ, symptom-based troubleshooting). Note: the current implementation supports ONLY standard products and unbatched serialized products — batched products and serialized-in-batch products are explicitly rejected by the resource (CONTAINS_BATCHED_PRODUCT error). Use when user asks about inventory allocation, deallocation, inventory reservation, ProductItem quantities, InventoryReservation, InventoryItemReservation, InventorySerializedProductReservation, inventory states, inventory count plan, inventory count assessment, AssigneeId on InventoryCountAssessment, cycle counting, "how does allocation work", "walk me through deallocation", "what status will my reservation be in", "why is my allocation pending", "what happens when I click Allocate", "can I allocate a batch", or any customer-facing journey/FAQ question for this module.
 ---
 
 # Manufacturing Cloud Inventory States and Allocation
@@ -11,7 +11,11 @@ Inventory Allocation provides a mechanism for soft-reserving inventory for vario
 
 - **Decoupling**: Allocation logic is decoupled from consuming systems (Sales Orders, Work Orders) — APIs are order-type agnostic
 - **Scalability**: Async processing via Message Queue handles high-volume concurrent allocations
-- **Flexibility**: Supports standard products, batched products, and serialized products
+- **Supported product types** (current implementation):
+  - ✅ Standard products (non-batched, non-serialized) — Pattern 1 below
+  - ✅ Unbatched serialized products — Pattern 2 below
+  - ❌ Batched products (any kind) — **explicitly rejected**. `InventoryAllocationResourceImpl#validateBatchedProduct(...)` calls `InventoryAllocationValidationUtil.listBatchedProducts(productIds)`; if any line-item product is batched, the request fails with the `CONTAINS_BATCHED_PRODUCT` error label.
+  - ❌ Serialized products that live inside a batch — same rejection (the line item product is itself batched)
 - **No validation on available qty**: The system does not block allocations when available quantity is insufficient (out of scope for initial release)
 
 ## Licensing & Access
@@ -368,5 +372,140 @@ SELECT Id, Product2Id, Product2.Name, LocationId, Location.Name
 FROM ProductFulfilmentLocation
 ORDER BY Product2.Name
 ```
+
+## Customer User Journey — Allocation & Deallocation
+
+Use this section when answering customer-facing "how does it work" / "walk me through it" / "why is X happening" questions. Lead with the click, then the system step it triggers.
+
+### Personas
+| Persona | Role | Typical questions |
+|---------|------|-------------------|
+| **Priya — Inventory Manager** | Owns plant/warehouse stock | "Why isn't QtyAvailable changing?" "What's reserved at my location?" |
+| **Raj — Order Fulfillment Specialist** | Promises delivery against orders | "How do I split an order across two locations?" "Pick which serials?" |
+| **Sara — Service Dispatcher** | Plans field-service Work Orders | "Reserve a serial part for a tech without removing it from stock?" |
+| **Anita — Manufacturing Admin** | Configures the org | "What perm does my team need?" "How do I turn this on?" |
+
+**Pre-conditions Anita owns:** org perm `InventoryAllocation`, org pref `InventoryAllocationEnabled`, user perm `ManageInventoryAllocation` + licence `InvAllocationUserPsl`, seeded `ProductItem` rows, optional `ProductFulfilmentLocation` for auto-allocate. A 403 on Allocate is almost always one of these missing.
+
+### Endpoints customers will hit
+| Action | Method + URL | Java handler |
+|--------|--------------|--------------|
+| Allocate | `POST /services/data/vXX.0/connect/inventory/allocation` | `InventoryAllocationResourceImpl#post` |
+| Deallocate | `POST /services/data/vXX.0/connect/inventory/deallocation` | `InventoryDeallocationResourceImpl#post` |
+| Read status | `GET /services/data/vXX.0/connect/inventory/allocation/{sourceId}` | `GetInventoryAllocationResourceImpl#get` |
+
+`{sourceId}` = `OrderId` / `WorkOrderId` / `ReturnOrderId` — the system derives the type via `InventoryAllocationFactory.getInventoryAllocationClass(sourceId)`.
+
+### Allocation journey
+```mermaid
+journey
+    title Allocate inventory to an Order
+    section Trigger
+      Open Order > Allocate Inventory: 5: Raj
+    section Decide
+      Pick allocation pattern (location / batch / serial): 4: Raj
+      Optional auto-allocate via ProductFulfilmentLocation: 5: Raj
+    section Submit
+      POST connect/inventory/allocation: 4: Raj
+      Resource validates (sources > items > locations): 3: System
+      Enqueuer drops MQ message keyed by sourceId: 3: System
+    section Confirm
+      MQ consumer updates ProductItem.QuantityAllocated: 3: System
+      Reservation status > Reserved: 5: Raj
+      GET allocation/{sourceId} > FULLY_ALLOCATED: 5: Raj
+```
+
+Step-by-step:
+1. **Trigger** — customer opens the Order/WorkOrder/ReturnOrder, clicks **Allocate Inventory**.
+2. **Decide pattern** — one of *standard / batch / serial-in-batch / serial-unbatched*. Auto-allocate requires `ProductFulfilmentLocation`.
+3. **Submit** — UI calls `POST connect/inventory/allocation`. Resource runs three-stage fail-fast validation:
+   - `validateAllSources(...)` — empty / duplicate `sourceId`
+   - `validateAllItems(...)` — empty / duplicate `sourceItemId`, items must exist
+   - per-source location/batch/serial validation
+   - Short-circuits with `ALLOCATION_ALREADY_IN_PROGRESS` if `inventoryItemReservationService.hasInProgressReservationsBySourceIds(...)` is true.
+4. **Enqueue** — `InventoryAllocationEnqueuer.enqueue(ALLOCATION, list)` writes one MQ message **per `sourceId`** (deduped: `DuplicateMessageException` is caught and warned).
+5. **Async commit** — MQ consumer locks `ProductItem`(s) (re-enqueues with delay on contention), aggregates `ProductItemAdditionalTransaction` rows (`Pending` → `Success`), updates `QuantityAllocated`, flips reservation `Reservation In Progress` → **`Reserved`**, sets `SerializedProduct.AllocationStatus` `None` → **`Allocated`**, sends in-app notification.
+6. **Verify** — `GET connect/inventory/allocation/{sourceId}` → status `NOT_ALLOCATED` / `PARTIALLY_ALLOCATED` / `FULLY_ALLOCATED` (`FULLY_ALLOCATED` set when `requestedLineItemQuantity.equals(successfulAllocatedQuantity)`).
+
+### Deallocation journey
+```mermaid
+journey
+    title Deallocate inventory
+    section Trigger
+      Order cancelled / wrong serial / line reduced: 2: Raj
+    section Scope
+      Pick scope (item / location / batch / serial): 4: Raj
+    section Submit
+      POST connect/inventory/deallocation: 4: Raj
+      Resource validates (3 stages): 3: System
+      Enqueuer drops MQ message: 3: System
+    section Confirm
+      Reservation > Cancellation In Progress > Cancelled: 5: Raj
+      QtyAllocated decremented; SerializedProduct > Deallocated: 5: Priya
+```
+
+Five scopes (pick the narrowest one — these mirror the patterns in the API section above):
+
+| Scope | When | What gets cancelled |
+|-------|------|---------------------|
+| Item-level | Cancel everything for a line | All locations for the line (`productItemId` left null) |
+| Location-level | Drop a specific location's reservation | Named locations only |
+| Batch (non-serial) | Drop specific batches | Named batches |
+| Batch (serialized) | Drop specific serials within a batch | Named serials only |
+| Serialized unbatched | Drop unbatched serials | Named serials only |
+
+### Reservation status — use these names verbatim
+```
+Allocation:   [API] → Reservation In Progress → [System async] Reserved
+Deallocation: [API] → Cancellation In Progress → [System async] Cancelled
+
+SerializedProduct.AllocationStatus:
+  None ──allocate──▶ Allocated ──deallocate──▶ Deallocated ──allocate again──▶ Allocated
+```
+A serial in `Allocated` cannot be re-allocated; deallocate first.
+
+### Persona-led FAQ
+- **"Is allocation synchronous?"** No. The API returns after validation + enqueue. Quantity updates and final `Reserved` status happen async via the MQ consumer.
+- **"Can I allocate more than I have on hand?"** Yes — the system warns but does not block. `QuantityAvailable` can go negative. Layer a custom validation if a hard guard is needed.
+- **"How do I deallocate just one serial?"** Send a request scoped to that serial — `deallocations[].serializedProductIds[]` (unbatched) or `batchItemIds[] + serializedProductIds[]` (batched). Other serials stay `Allocated`.
+- **"Can two users allocate the same `ProductItem` at once?"** Yes. The MQ consumer locks per message; if locked, re-enqueues with delay (max 3 retries before fallback to manual sync).
+- **"How do I retry a stuck allocation?"** Check `ProductItemAdditionalTransaction.TransactionStatus`. Don't re-POST while the reservation is `Reservation In Progress` — you'll hit `ALLOCATION_ALREADY_IN_PROGRESS`.
+- **"Difference between `Reservation In Progress` and `Reserved`?"** `In Progress` = API accepted, async work pending. `Reserved` = MQ consumer finished, `QuantityAllocated` updated. `Reserved` is the authoritative committed state.
+- **"Does deallocate throw away data?"** No. Reservation rows stay in `Cancelled` for audit; serial flips to `Deallocated`.
+
+### Symptom-based troubleshooting (work backwards from what the customer sees)
+| Customer says… | Most likely cause | What to check |
+|----------------|------------------|----------------|
+| "403 when I click Allocate" | Missing `ManageInventoryAllocation` perm or `InventoryAllocationEnabled` org pref off | `PermissionSetAssignment`; org pref |
+| "Allocation already in progress" | Earlier MQ run hasn't finished | SOQL `InventoryItemReservation.Status` for that `sourceId` |
+| "Stuck in Reservation In Progress" | MQ consumer hasn't run / lock contention exhausted | `ProductItemAdditionalTransaction.TransactionStatus` + `QuantityStateRefreshDate` lag |
+| "Deallocated but `QtyAvailable` didn't change" | Async hasn't finished, or scope was too narrow | Re-check status; verify scope |
+| "Can't deallocate this serial — no record" | Resource throws `DEALLOCATION_RECORD_NOT_FOUND_FOR_LOCATION_USER_EXCEPTION` | Confirm serial is `Allocated` and tied to that location |
+| "Submitting twice did nothing" | MQ dedupe by `sourceId` (`DuplicateMessageException` caught) | Expected — first submit is in flight |
+| "Auto-allocate doesn't pre-fill" | `ProductFulfilmentLocation` missing | Anita seeds the mapping |
+| "QtyAvailable went negative" | System does not block over-allocation by design | Layer a custom validation |
+
+### Telemetry & log breadcrumbs (for support escalations)
+| Symptom | What to grep |
+|---------|-------------|
+| API hit but no record | `InventoryAllocationResourceApi-Init` / `InventoryDeallocationResourceApi-Init` |
+| API succeeded? | events `ALLOCATION_API_SUCCESS` / `_ERROR`, `DEALLOCATION_API_SUCCESS` / `_ERROR` |
+| MQ message went out? | `InventoryAllocationEnqueue-Complete` / `-Failed` and `Single Message enqueued successfully - sourceId: …, messageId: …` |
+| Dedupe hit | `DuplicateMessageException` warning in enqueuer log |
+| Consumer slow | `ProductItemAdditionalTransaction` `Pending` count + `QuantityStateRefreshDate` lag |
+
+### Code references (for handoff to engineering)
+| Concern | File |
+|---------|------|
+| Allocation API handler | `industries-unified-inventory-connect-impl/.../resource/InventoryAllocationResourceImpl.java` |
+| Deallocation API handler | `industries-unified-inventory-connect-impl/.../resource/InventoryDeallocationResourceImpl.java` |
+| GET allocation handler | `industries-unified-inventory-connect-impl/.../resource/GetInventoryAllocationResourceImpl.java` |
+| Validation utils | `industries-unified-inventory-connect-impl/.../util/InventoryAllocationValidationUtil.java` |
+| Allocation factory (resolves source type) | `industries-unified-inventory-impl/.../helper/InventoryAllocationFactory.java` |
+| MQ enqueuer | `industries-unified-inventory-impl/.../mq/enqueuer/InventoryAllocationEnqueuer.java` |
+| Allocation service (status calc, get-allocation) | `industries-unified-inventory-impl/.../inventoryallocation/service/InventoryAllocationService.java` |
+| Status enum constants | `industries-unified-inventory-connect-api/.../util/UnifiedInventoryConnectApiConstants.java` |
+| OpenAPI | `industries-unified-inventory-connect-api/java/resources/unified-inventory-api.yaml` |
+| FIT functional tests | `industries-unified-inventory-connect-impl/test/func/java/src/inventoryallocation/Base*ResourceApiTest.java` |
 
 > 📖 Source: Manufacturing Cloud — Inventory Allocation
