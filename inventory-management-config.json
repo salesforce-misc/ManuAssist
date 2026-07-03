@@ -1,0 +1,385 @@
+{
+  "inventoryManagement": {
+    "module": "Product and Part Inventory in Manufacturing Cloud",
+    "description": "Configuration for tracking inventory across locations, transfers, and transactions",
+    "version": "Summer '25",
+    "orgValidation": {
+      "orgAlias": "mfgsdb38",
+      "validatedDate": "2026-05-04",
+      "inventoryLocations": {
+        "total": 3400,
+        "byType": {
+          "Warehouse": 1754,
+          "Dealer Location": 1038,
+          "Inventory Location": 475,
+          "MANUFACTURING": 67,
+          "LABORATORY": 66
+        }
+      },
+      "productItems": {
+        "total": 5741,
+        "withStock": 4552,
+        "serializedProducts": 4437
+      },
+      "productTransfers": {
+        "total": 0,
+        "note": "No transfers configured yet - ready for initial setup"
+      },
+      "objectsValidated": [
+        "ProductItem (24 fields)",
+        "ProductTransfer (40 fields)",
+        "SerializedProduct (19 fields)",
+        "Location (with IsInventoryLocation)"
+      ],
+      "permissionSets": [
+        "ManufacturingSampleMgmtUserPsl",
+        "InventoryCountUserForExprcCloudPsl",
+        "InventoryCountManagerForExprcCloudPsl",
+        "ManufacturingAdvancedAccountForecastPsl"
+      ]
+    },
+
+    "dataModel": {
+      "coreObjects": [
+        {
+          "object": "Product",
+          "purpose": "Define stock-keeping units with commercial value",
+          "usage": "Create Product records for items sold to customers"
+        },
+        {
+          "object": "ProductItem",
+          "purpose": "Track quantity of products at specific inventory locations",
+          "usage": "Associated with inventory location (warehouse/distribution lot) and product",
+          "keyFields": ["QuantityOnHand", "LocationId", "Product2Id", "QuantityUnitOfMeasure"],
+          "orgValidation": {
+            "totalFields": 24,
+            "recordCount": 5741,
+            "withStock": 4552,
+            "note": "Uses Product2Id (not ProductId) - validated in mfgsdb38"
+          }
+        },
+        {
+          "object": "ProductItemTransaction",
+          "purpose": "Track when products are consumed, replenished, adjusted, or transferred",
+          "usage": "Auto-generated records specifying quantity of products impacted by action",
+          "transactionTypes": ["Consumption", "Replenishment", "Adjustment", "Transfer"]
+        },
+        {
+          "object": "ProductRequest",
+          "purpose": "Track product shipments that have been ordered or requested",
+          "relatedObject": "ProductRequestLineItem",
+          "usage": "Represents product shipment requested"
+        },
+        {
+          "object": "ProductTransfer",
+          "purpose": "Track transfer or movement between two inventory locations",
+          "relatedObject": "ProductTransferState",
+          "usage": "Tracks destination/source locations, quantity, shipment details",
+          "orgValidation": {
+            "totalFields": 40,
+            "recordCount": 0,
+            "note": "Object exists but no transfers configured yet in mfgsdb38"
+          }
+        },
+        {
+          "object": "Shipment",
+          "purpose": "Track product items in transit between locations",
+          "relatedObject": "ShipmentLineItem",
+          "usage": "Stores source/destination locations and tracking details"
+        },
+        {
+          "object": "ProductRequired",
+          "purpose": "Track product items required to complete work order",
+          "usage": "Quantity of product required for work order or line item"
+        },
+        {
+          "object": "ProductConsumed",
+          "purpose": "Track products consumed to complete work order",
+          "relatedObject": "ProductConsumedState",
+          "usage": "Quantity used for work order/line item and new state after consumption"
+        },
+        {
+          "object": "ReturnOrder",
+          "purpose": "Track repair, return, or recall of product items",
+          "relatedObjects": ["ReturnOrderLineItem", "ReturnOrderItemAdjustment"],
+          "usage": "Quantity of each product in return order, processing plan, reason for return"
+        },
+        {
+          "object": "SerializedProduct",
+          "purpose": "Track products with serial numbers at inventory locations",
+          "relatedObject": "SerializedProductTransactions",
+          "usage": "Associate serial numbers with product items to identify units available",
+          "orgValidation": {
+            "totalFields": 19,
+            "recordCount": 4437,
+            "note": "Heavily used in mfgsdb38 - 0.77 serialized products per ProductItem"
+          }
+        }
+      ]
+    },
+
+    "searchAndTransferSetup": {
+      "description": "Build search experience for inventory managers using Criteria-Based Search and Filter",
+      "components": [
+        {
+          "name": "Searchable Object Configuration",
+          "apiName": "Product_and_Part_Inventory_Search",
+          "searchableObject": "ProductInventorySearchableField",
+          "dataPopulation": "Update Product Inventory Searchable Field Values (DPE template)",
+          "purpose": "Consolidate inventory data across multiple objects"
+        },
+        {
+          "name": "Criteria Field Mappings",
+          "mappings": [
+            {
+              "searchableField": "InventoryLocationType",
+              "sourceObject": "Location",
+              "sourceField": "ProductFamily"
+            },
+            {
+              "searchableField": "ParentInventoryLocationType",
+              "sourceObject": "Location",
+              "sourceField": "LocationType"
+            },
+            {
+              "searchableField": "TotalQuantityUnitOfMeasure",
+              "sourceObject": "ProductItem",
+              "sourceField": "QuantityUnitOfMeasure"
+            }
+          ]
+        },
+        {
+          "name": "Result Field Mappings",
+          "mappings": [
+            {
+              "searchableField": "AccountName",
+              "sourceObject": "ProductInvSearchableField",
+              "sourceField": "AccountId"
+            },
+            {
+              "searchableField": "BusinessBrandName",
+              "sourceObject": "ProductInvSearchableField",
+              "sourceField": "BusinessBrandId"
+            },
+            {
+              "searchableField": "InventoryLocationName",
+              "sourceObject": "ProductInvSearchableField",
+              "sourceField": "InventoryLocationId"
+            },
+            {
+              "searchableField": "Name",
+              "sourceObject": "ProductInvSearchableField",
+              "sourceField": "ProductItemId"
+            },
+            {
+              "searchableField": "ParentInventoryLocationName",
+              "sourceObject": "ProductInvSearchableField",
+              "sourceField": "ParentInventoryLocationId"
+            },
+            {
+              "searchableField": "ProductName",
+              "sourceObject": "ProductInvSearchableField",
+              "sourceField": "ProductId"
+            }
+          ]
+        },
+        {
+          "name": "Search Action Configuration",
+          "actionName": "Product Transfer",
+          "apiName": "Product__Transfer",
+          "actionType": "LightningWebComponent",
+          "actionReference": "Product Transfer"
+        },
+        {
+          "name": "Search Criteria Configuration",
+          "configName": "Product and Parts Inventory Search and Transfer",
+          "searchableObject": "Product Inventory Searchable Field",
+          "searchCriteriaFields": [
+            "Product Family",
+            "Product ID",
+            "Location ID",
+            "Inventory Location Type",
+            "Model Name",
+            "Make Name",
+            "Model Year",
+            "Product Manufacturer Name",
+            "Product Version Name",
+            "Product Item ID"
+          ],
+          "resultDisplayFields": [
+            "Product Name",
+            "Inventory Location Name",
+            "Total Quantity At Location",
+            "Total Quantity Unit Of Measure"
+          ],
+          "resultAggregationFields": [
+            "Inventory Location Name",
+            "Inventory Location Type",
+            "Model Name",
+            "Make Name",
+            "Business Brand"
+          ],
+          "resultSortingFields": [
+            "Product Name",
+            "Product Manufacturer Name",
+            "Inventory Location Name",
+            "Inventory Location Type",
+            "Total Quantity At Location"
+          ],
+          "searchResultActions": ["Product Transfer action configuration"]
+        }
+      ]
+    },
+
+    "implementationSteps": {
+      "phase1_preparation": {
+        "title": "Prepare Your Org",
+        "tasks": [
+          {
+            "step": 1,
+            "action": "Turn on required features in Setup",
+            "reference": "Workflow for Inventory Search and Transfer"
+          },
+          {
+            "step": 2,
+            "action": "Assign users required permission sets",
+            "permissionSets": ["ManufacturingServiceUser", "InventoryAllocationUser"]
+          },
+          {
+            "step": 3,
+            "action": "Customize page layouts for inventory objects",
+            "objects": ["ProductItem", "ProductTransfer", "Location"]
+          }
+        ]
+      },
+      "phase2_searchableObject": {
+        "title": "Create Searchable Object Configuration",
+        "tasks": [
+          {
+            "step": 1,
+            "action": "Create searchable object configuration: Product and Part Inventory Search"
+          },
+          {
+            "step": 2,
+            "action": "Select Product Inventory Searchable Field as searchable object"
+          },
+          {
+            "step": 3,
+            "action": "Activate Update Product Inventory Searchable Field Values DPE as data synchronization job"
+          },
+          {
+            "step": 4,
+            "action": "Define criteria field mappings (see criteriaFieldMappings)"
+          },
+          {
+            "step": 5,
+            "action": "Define result field mappings (see resultFieldMappings)"
+          }
+        ]
+      },
+      "phase3_searchAction": {
+        "title": "Create Search Action Configuration",
+        "tasks": [
+          {
+            "step": 1,
+            "action": "Create search action: Product Transfer",
+            "apiName": "Product__Transfer",
+            "actionType": "LightningWebComponent",
+            "actionReference": "Product Transfer"
+          }
+        ]
+      },
+      "phase4_searchCriteria": {
+        "title": "Create Search Criteria Configuration",
+        "tasks": [
+          {
+            "step": 1,
+            "action": "Create configuration: Product and Parts Inventory Search and Transfer"
+          },
+          {
+            "step": 2,
+            "action": "Select Product Inventory Searchable Field as searchable object"
+          },
+          {
+            "step": 3,
+            "action": "Select Product and Part Inventory Search as searchable object configuration"
+          },
+          {
+            "step": 4,
+            "action": "Configure search criteria fields (see searchCriteriaFields)"
+          },
+          {
+            "step": 5,
+            "action": "Configure result display fields (see resultDisplayFields)"
+          },
+          {
+            "step": 6,
+            "action": "Configure result aggregation fields (see resultAggregationFields)"
+          },
+          {
+            "step": 7,
+            "action": "Configure result sorting fields (see resultSortingFields)"
+          },
+          {
+            "step": 8,
+            "action": "Select Product Transfer action configuration"
+          }
+        ]
+      },
+      "phase5_deployment": {
+        "title": "Add Search Component to Page",
+        "tasks": [
+          {
+            "step": 1,
+            "action": "Add Criteria-Based Search and Filter component to Manufacturing app Home page"
+          },
+          {
+            "step": 2,
+            "action": "Select Product and Parts Inventory Search and Transfer as search configuration"
+          }
+        ]
+      }
+    },
+
+    "userPermissions": {
+      "requiredPermissionSets": [
+        {
+          "name": "ManufacturingServiceUser",
+          "purpose": "Access inventory management features",
+          "assignTo": ["Inventory managers", "Service technicians", "Service reps"]
+        },
+        {
+          "name": "InventoryAllocationUser",
+          "purpose": "Manage inventory allocation and deallocation",
+          "requiresPermission": "ManageInventoryAllocation",
+          "assignTo": ["Inventory allocation managers"]
+        }
+      ]
+    },
+
+    "bestPractices": [
+      {
+        "practice": "Use DPE for Data Synchronization",
+        "description": "Activate Update Product Inventory Searchable Field Values DPE to keep searchable object fresh, relevant, and accurate"
+      },
+      {
+        "practice": "Configure Aggregation for Grouping",
+        "description": "Use Inventory Location Type as grouping criteria to see results by location type (e.g., Distributor Standard Inventory, Vendor Standard Inventory)"
+      },
+      {
+        "practice": "Enable Product Transfer Actions",
+        "description": "Configure search action to allow users to transfer serialized and non-serialized products directly from search results"
+      },
+      {
+        "practice": "Customize Search Criteria",
+        "description": "Control how users search inventory, how results appear, and what actions can be taken from search results"
+      }
+    ],
+
+    "relatedDocumentation": [
+      "Workflow for Inventory Search and Transfer",
+      "Inventory Search and Transfer in Manufacturing Cloud",
+      "Criteria-Based Search and Filter"
+    ]
+  }
+}

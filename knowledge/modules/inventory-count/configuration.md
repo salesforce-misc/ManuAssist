@@ -3,31 +3,70 @@
 ## Prerequisites
 
 - Manufacturing Cloud for Service license with Inventory Management
-- Location records set up representing warehouses or counting areas
+- `Location` records set up representing warehouses or counting areas (`IsInventoryLocation = true`)
+- `Product2` records (serialized and/or non-serialized), with `ProductItem` on-hand stock per location
+- For serialized products: `SerializedProduct` records carrying `SerialNumber`
 - Users assigned appropriate permission sets for inventory management
+- (For Queue assignment) a Queue configured to support `InventoryCountAssessment`
+
+## Data Model Recap
+
+Only `InventoryCountPlan` is created directly. `InventoryCountPlanItem`, `InventoryCountAssessment`, and `InventoryCountProductItem` are **system-generated** by the `/connect/inventory/inventory-count` REST API. See `overview.md` for full field tables.
 
 ## Configuration Steps
 
-### Step 1: Create an Inventory Count Plan
-1. Navigate to **Inventory Count Plans** in the app
-2. Create a new plan specifying:
-   - Name
-   - Location (warehouse/area to count)
-   - Start Date and End Date
+### Step 1: Stage Inventory Master Data
 
-### Step 2: Create Inventory Count Assessments
-Create one assessment per counting team or individual:
 ```bash
-sf data create record --sobject InventoryCountAssessment \
-  --values "InventoryCountPlanId=<PlanId> AssigneeId=<UserId> Status=Pending StartDate=2025-01-01 DueDate=2025-01-07" \
+# Location (warehouse)
+sf data create record --sobject Location \
+  --values "Name=CycleCount-Loc-Blr LocationType=Warehouse IsInventoryLocation=true" \
+  --target-org <alias>
+
+# Product (serialized example)
+sf data create record --sobject Product2 \
+  --values "Name=InvCC-Prod-1 ProductCode=INVCC1 StockKeepingUnit=invcc1 IsActive=true IsSerialized=true" \
+  --target-org <alias>
+
+# ProductItem (on-hand stock at the location)
+sf data create record --sobject ProductItem \
+  --values "Product2Id=<Product2Id> LocationId=<LocationId> QuantityOnHand=10 QuantityUnitOfMeasure=Each" \
   --target-org <alias>
 ```
 
-### Step 3: Assign to Queues (Optional)
-`AssigneeId` supports Queue assignment for team-based counting:
+### Step 2: Create an Inventory Count Plan
+Create the parent plan, specifying location, the count window, and the recurrence cadence:
+
+```bash
+sf data create record --sobject InventoryCountPlan \
+  --values "Name=InventoryCountPlan-Blr Status=Active LocationId=<LocationId> CountInterval=1 CountIntervalUnitOfMeasure=Month CountWindowDays=2" \
+  --target-org <alias>
+```
+
+- `CountIntervalUnitOfMeasure` accepts `Day` / `Week` / `Month` / `Quarter` — this is how you implement **ABC / frequency-tiered counting** natively (daily for A-items, quarterly for C-items).
+- `StartDateTime` / `EndDateTime` define the overall horizon the recurrence runs over.
+
+### Step 3: Initiate the Count (Connect REST API)
+
+```bash
+sf api request rest "/services/data/v60.0/connect/inventory/inventory-count" \
+  --method POST \
+  --body '{"productItemIds":["<ProductItemId>"],"assignee":"<UserOrQueueId>","inventoryCountPlanId":"<PlanId>","isBlindCount":true}' \
+  --target-org <alias>
+```
+
+Expect `201` with `{ "isSuccess": true }`. The platform then **asynchronously** generates:
+- one `InventoryCountPlanItem` (`IsBlindCount = true`),
+- one `InventoryCountAssessment` (`Status = 'Assigned'`, `Type = 'Periodic'`, `PlannedStartDateTime` from the plan),
+- one `InventoryCountProductItem` per `ProductItem` in `productItemIds`.
+
+**Poll** for the generated records before validating — they are not present the instant the `201` returns.
+
+### Step 4: Assign to Queues (Optional)
+`assignee` / `AssigneeId` supports Queue assignment for team-based counting:
 - Create a Queue for counting teams in **Setup > Queues**
-- Assign `InventoryCountAssessment` object to the queue
-- Set `AssigneeId` to the Queue ID on assessments
+- Assign the `InventoryCountAssessment` object to the queue
+- Pass the Queue Id as `assignee` in the REST call
 
 ## Page Layout Configuration
 
@@ -36,7 +75,7 @@ sf data create record --sobject InventoryCountAssessment \
 **Supported approach:**
 1. Go to the `InventoryCountPlan` page layout
 2. Add `InventoryCountAssessment` as a related list
-3. Add standard fields: `Name`, `Status`, `StartDate`, `DueDate`
+3. Add standard fields: `Name`, `Status`, `Type`, `PlannedStartDateTime`
 
 **Do NOT add `AssigneeId` as a related list column** — it is a polymorphic lookup and will cause a layout error or silently fail to display.
 
@@ -76,8 +115,18 @@ Or use `describe_sobject` to get the full field list including polymorphic field
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
+| `201` returned but no assessment/plan-item records | Generation is asynchronous | Poll `InventoryCountAssessment` / `InventoryCountPlanItem` until records appear before asserting |
+| `isSuccess: false` or non-201 from the REST call | Bad `productItemIds`, `assignee`, or `inventoryCountPlanId`; plan not `Active` | Verify each Id resolves and the plan `Status = 'Active'` |
 | Error adding `AssigneeId` to related list column | Polymorphic field — layout editor can't resolve a single object type | Use a custom text field populated by Flow instead |
 | `AssigneeId` not visible in ARC | ARC doesn't enumerate polymorphic fields | Use SOQL describe or `describe_sobject` tool to confirm field existence |
-| Assessment not appearing in related list | Object not added to page layout correctly | Add `InventoryCountAssessment` related list to the layout explicitly |
-| Cannot set AssigneeId to Queue | Queue not configured for `InventoryCountAssessment` | Add the object to the Queue's supported objects in Setup > Queues |
-| AssigneeId shows as blank on record | Assignee was deleted or reassigned | Re-assign using the record edit action |
+| `InventoryCountProductItem.IsSerializedProduct` wrong | Mismatch with `Product2.IsSerialized` | Confirm the `Product2` behind the `ProductItem` has the expected `IsSerialized` value |
+| Cannot set `assignee` to Queue | Queue not configured for `InventoryCountAssessment` | Add the object to the Queue's supported objects in Setup > Queues |
+| Count never recurs on the expected cadence | `CountInterval` / `CountIntervalUnitOfMeasure` not set, or horizon (`EndDateTime`) too short | Set the interval fields; ensure `EndDateTime` spans enough cycles |
+| Assessment overdue / not completed | Counter exceeded `CountWindowDays` | Use `CountWindowDays` + `PlannedStartDateTime` to drive SLA/escalation reporting |
+
+## Re-run / Cleanup Order
+
+When tearing down a count cycle to re-run, delete children **before** the assessment:
+1. Delete `InventoryCountProductItem` rows
+2. Delete `InventoryCountAssessment` rows
+3. Leave (or delete) the parent `InventoryCountPlan` as needed
