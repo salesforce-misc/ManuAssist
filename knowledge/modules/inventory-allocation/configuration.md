@@ -1,11 +1,25 @@
 # Inventory Allocation — Configuration & Troubleshooting
 
+> **Source:** Verified against Salesforce Core release **264** UDD settings, Setup Discovery configuration, and PSL definitions.
+
 ## Prerequisites
 
 - Manufacturing Cloud for Service license with Inventory Allocation add-on
-- Inventory Allocation org permission and preference enabled
-- `ManageInventoryAllocation` user permission assigned
+- Inventory Allocation org permission (`InventoryAllocation`) and org preference (`InventoryAllocationEnabled`) enabled
+- `ManageInventoryAllocation` user permission assigned (or `ManageInventoryAllocationInExprcCloud` for Experience Cloud users)
 - `ProductItem` records with `QuantityOnHand > 0` at relevant locations
+- For batch allocation: `orgHasBatchManagementEnabled` AND `orgHasDistributorManagementPilot` (additional gating on `InventoryBatchItemReservation`)
+
+## Setup Discovery Wizard
+
+Salesforce Core ships a Setup Discovery configuration at `core/industries-unified-inventory/java/resources/discovery/configurations/industries-mfg-inventory-allocation.configuration.json` with two required steps:
+
+| Step | Type | Action |
+|------|------|--------|
+| `inventoryAllocationUserAccess` | UserAssignment | Assign `force__InvAllocationUserPsl` (internal) or `force__InventoryAllocationExprcCloudPsl` (Experience Cloud) |
+| `AddInventoryAllocationComponent` | URL | Open `/lightning/o/Order/home` and add the Inventory Allocation LWC component to the Order page (help URL: `xcloud.aslm_inventory_allocation_add_component.htm`) |
+
+> **Naming note:** The public docs label the assignable permission set as `InventoryAllocationUser`. In core that perm set is **delivered as part of the Permission Set License `force__InvAllocationUserPsl`** — when you assign the PSL, the underlying perm set comes with it.
 
 ## Configuration Steps
 
@@ -13,6 +27,13 @@
 1. Go to **Setup > Inventory Allocation Settings**
 2. Enable the `InventoryAllocationEnabled` org preference
 3. Verify the `InventoryAllocation` org permission is active on the license
+
+   Via Metadata API:
+   ```xml
+   <InventoryAllocationSettings xmlns="http://soap.sforce.com/2006/04/metadata">
+     <enableInventoryAllocation>true</enableInventoryAllocation>
+   </InventoryAllocationSettings>
+   ```
 
 ### Step 2: Set Up Locations
 Inventory is tracked per location (`Location` object):
@@ -29,12 +50,15 @@ sf data create record --sobject ProductItem \
   --target-org <alias>
 ```
 
-### Step 4: Assign Permission Sets
-| Permission Set | Who Needs It |
-|---------------|-------------|
-| `InventoryAllocationUser` | Allocation managers and planners |
+### Step 4: Assign Permission Set Licenses
+| PSL (assign this) | Underlying Perm Set | Who Needs It |
+|---|---|---|
+| `force__InvAllocationUserPsl` | `InventoryAllocationUser` | Internal allocation managers and planners |
+| `force__InventoryAllocationExprcCloudPsl` | (Experience Cloud variant) | Partner/distributor users on Experience Cloud sites |
 
-Also ensure users have `ManageInventoryAllocation` user permission.
+Also ensure users have the corresponding user permission:
+- Internal: `ManageInventoryAllocation` (Tooling/Metadata API: `PermissionsManageInventoryAllocation`)
+- Experience Cloud: `ManageInventoryAllocationInExprcCloud` (`PermissionsManageInventoryAllocationInExprcCloud`)
 
 ### Step 5: Set Up Product Fulfillment Locations (for Auto-Allocation)
 Create `ProductFulfilmentLocation` records to enable auto-allocation:
@@ -81,15 +105,33 @@ Expected result:
 
 | Issue | Likely Cause | Fix |
 |-------|-------------|-----|
-| API returns 403 Forbidden | Missing `ManageInventoryAllocation` perm or org pref disabled | Enable org preference + assign user permission |
-| Allocation stuck in "Reservation In Progress" | MQ handler failed or lock contention | Check `ProductItemAdditionalTransaction` for `TransactionStatus = Failure`; may need manual sync |
-| `QuantityAllocated` not updating | Async processing delayed | Check `QuantityStateRefreshDate` on ProductItem; review transaction logs |
-| Serialized product can't be allocated | `AllocationStatus` already `Allocated` or `Status` not `Available` | Deallocate existing reservation or check SP status |
-| Deallocation not reflecting | Cancellation async processing still in progress | Wait for MQ processing; check transaction log for cancellation records |
+| API returns 403 Forbidden | Missing `ManageInventoryAllocation` perm or org pref disabled | Enable org preference + assign user permission (or PSL) |
+| API returns `ALLOCATION_ALREADY_IN_PROGRESS` | Another reservation for the same `sourceId` is in `ReservationInProgress` or `CancellationInProgress` | Wait for MQ to finish (`InventoryReservation.IsAsyncOperationInProgress = false`) before retrying |
+| API returns `USER_REQUEST_ERROR` | Stage-3 validation failure (zero qty, duplicate location, missing serialized IDs, etc.) | Inspect `errorDetails[]` in response; fix payload |
+| Allocation stuck in `ReservationInProgress` | MQ handler failed or `ProductItem` lock contention | Check `ProductItemAddlTrxn.Status = 'Pending'`; if stale, call `POST /connect/inventory/process-additional-transaction` with `forceUnlock=true` |
+| `QuantityAllocated` not updating | `ProductItemAddlTxnProcessor` couldn't acquire lock | Items get re-enqueued with 15s delay; inspect `ProductItemAddlTrxn` Pending rows; manual reconcile via Process Additional Transaction API |
+| Serialized product can't be allocated | `AllocationStatus` already `Allocated` or `Status` not `Available` | Deallocate existing reservation or check SerializedProduct status |
+| Deallocation not reflecting | Cancellation async processing still in progress | Wait for MQ processing; check `InvItemInstanceReservation.Status` and `ProductItemAddlTrxn` |
 | Auto-allocate shows no preview | Missing `ProductFulfilmentLocation` records | Create product-to-location mapping records |
-| Batch allocation fails | `ProductBatchItem.RemainingQuantity = 0` | Check available batch quantity before allocation |
+| Batch allocation fails | `ProductBatchItem.RemainingQuantity = 0`, or `orgHasBatchManagementEnabled`/`orgHasDistributorManagementPilot` not enabled | Check batch quantity AND verify both org perms are active |
 | API returns 400 on serialized | SP `AllocationStatus` already set | Each serialized product can only be in one active reservation |
+| MQ message keeps retrying | Handler error during commit; max retries 2 | Check logs around `InventoryAllocationHandler.handleMessage`; failure notification should appear in-app after final attempt |
 | Inventory Location lookup shows all locations, can't filter by LocationType | Expected behavior — CBSF does not auto-filter by LocationType | Add `InventoryLocationType` to the search criteria fieldset in CBSF configuration (see below) |
+
+## Async Pipeline Reference
+
+The allocation API returns `{ isSuccess: true }` as soon as the MQ message is enqueued — **the actual reservation is created asynchronously**. To verify completion:
+
+1. Poll `InventoryReservation.IsAsyncOperationInProgress` — `false` means the handler finished.
+2. Check `InventoryReservation.IsSuccess` and `ErrorMessage`/`ErrorCode`.
+3. Check `InventoryItemReservation.Status` — should be `Reserved` (or `Cancelled` for deallocation).
+4. Check `ProductItemAddlTrxn` rows linked to the reservation — `Status = Completed` means `ProductItem` quantities have been updated.
+
+Constants:
+- MQ type: `MessageQueueTypeEnum.INVENTORY_ALLOCATION` (Tier 2)
+- Max retries: `2`
+- Clone message delay on retry: `60s`
+- Re-enqueue delay on lock contention: `15s`
 
 ## Inventory Search and Transfer Component — CBSF Configuration
 
