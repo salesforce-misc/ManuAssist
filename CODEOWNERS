@@ -1,2 +1,34 @@
-# Replace with GitHub users/teams that have write access.
-* @salesforce-misc
+# Comment line immediately above ownership line is reserved for related other information. Please be careful while editing.
+#ECCN:Open Source
+#GUSINFO:SC_MFG_CLOUD,Manufacturing Cloud
+
+# CODEOWNERS for salesforce-misc/ManuAssist
+#
+# GitHub auto-requests reviews from listed owners on every PR that touches
+# matching paths. Order matters: the LAST matching pattern wins.
+# Docs: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Required reviewers (configured via branch protection on `master`):
+# - At least one approving CODEOWNER review before merge.
+# - Stale reviews dismissed on new commits.
+
+# Default — everything not matched by a more specific rule
+* @carlosvl
+
+# Source code
+/src/ @carlosvl
+/skills/ @carlosvl
+/commands/ @carlosvl
+/agents/ @carlosvl
+/knowledge/ @carlosvl
+
+# Documentation
+/docs/ @carlosvl
+/README.md @carlosvl
+
+# Governance
+/LICENSE.txt @carlosvl
+/CODEOWNERS @carlosvl
+/CONTRIBUTING.md @carlosvl
+/CODE_OF_CONDUCT.md @carlosvl
+/SECURITY.md @carlosvl
